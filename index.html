@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>NiftyAnalysis — Live Option Chain Intelligence</title>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <style>
   :root {
     --bg-primary:#0a0b0e;--bg-secondary:#111318;--bg-card:#161920;--bg-hover:#1c2028;
@@ -177,8 +178,84 @@
   .toast.warn{border-left:3px solid var(--am)}
   .toast.info{border-left:3px solid var(--b)}
 
-  @media(max-width:1100px){.right-panel{display:none}}
-  @media(max-width:850px){.left-panel{width:200px}}
+  /* HAMBURGER / MOBILE NAV */
+  .ham-btn{display:none;background:none;border:1px solid var(--border);border-radius:6px;color:var(--txt);padding:6px 9px;cursor:pointer;font-size:16px;line-height:1}
+  .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:199}
+  .overlay.open{display:block}
+
+  /* ICON BUTTONS */
+  .icon-btn{background:var(--bg-card);border:1px solid var(--border-b);color:var(--txt2);padding:6px 10px;border-radius:6px;cursor:pointer;font-size:13px;transition:all .15s;display:flex;align-items:center;gap:5px;font-family:inherit;white-space:nowrap}
+  .icon-btn:hover{background:var(--bg-hover);color:var(--txt);border-color:var(--border-b)}
+  .icon-btn.go{background:linear-gradient(135deg,var(--g),#00b894);color:#000;border-color:transparent;font-weight:600}
+  .icon-btn.go:hover{opacity:.88}
+  .icon-btn i{font-size:12px}
+
+  /* IMPROVED MODAL */
+  .modal-box{max-height:90vh;overflow-y:auto;scrollbar-width:thin}
+  .modal-header{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+  .modal-header-icon{width:36px;height:36px;border-radius:8px;background:linear-gradient(135deg,rgba(0,212,170,.2),rgba(74,158,255,.2));display:flex;align-items:center;justify-content:center;font-size:18px}
+
+  /* IMPROVED SECTION TITLES */
+  .stitle{font-size:10px;text-transform:uppercase;letter-spacing:1.2px;color:var(--txt3);margin-bottom:10px;display:flex;align-items:center;gap:6px;font-weight:600}
+  .stitle i{font-size:10px;color:var(--b)}
+  .stitle::before{display:none}
+
+  /* SIGNAL ROWS WITH ICONS */
+  .srow{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border)}
+  .sname{color:var(--txt2);font-size:12px;display:flex;align-items:center;gap:6px}
+  .sname i{width:14px;text-align:center;color:var(--txt3);font-size:11px}
+
+  /* CONTROLS LABEL */
+  .clabel{font-size:10px;color:var(--txt3);text-transform:uppercase;letter-spacing:.6px;display:flex;align-items:center;gap:4px}
+  .clabel i{font-size:9px}
+
+  /* CHAIN CONTROL RESPONSIVE */
+  .chain-ctrl{padding:8px 16px;gap:10px;flex-wrap:wrap}
+  .ctrl-group{display:flex;align-items:center;gap:7px}
+
+  /* STATUS BAR RESPONSIVE */
+  .sbar{flex-wrap:wrap;gap:12px;padding:5px 16px;min-height:28px}
+  .sbar-item{display:flex;align-items:center;gap:5px}
+
+  /* IMPROVED ZONE BLOCKS */
+  .zblock{border-radius:8px;padding:8px 12px;margin-bottom:6px}
+  .zblock:last-child{margin-bottom:0}
+  .zstrike{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;display:flex;align-items:center;gap:5px}
+
+  /* GAUGE */
+  .gauge-bar{height:8px;border-radius:6px}
+  .gauge-needle{top:-5px;height:18px}
+  .bias-big{font-size:22px;letter-spacing:1px}
+
+  /* BREAKPOINTS */
+  @media(max-width:1200px){.right-panel{display:none}}
+  @media(max-width:900px){
+    .left-panel{display:none;position:fixed;top:0;left:0;height:100vh;z-index:200;width:280px;background:var(--bg-primary);border-right:1px solid var(--border-b);box-shadow:4px 0 24px rgba(0,0,0,.5);transition:transform .3s;transform:translateX(-100%)}
+    .left-panel.mobile-open{display:flex;transform:translateX(0)}
+    .ham-btn{display:flex;align-items:center}
+    .hdr-center{display:none}
+    .main{height:calc(100vh - 52px)}
+  }
+  @media(max-width:600px){
+    .header{padding:0 12px;height:52px}
+    .logo-text{display:none}
+    .stat-pill{padding:3px 8px}
+    .pill-label{font-size:9px}
+    .pill-val{font-size:11px}
+    .chain-ctrl{padding:6px 10px;gap:8px}
+    select{padding:4px 7px;font-size:11px}
+    .ctable{font-size:10px}
+    .ctable th{font-size:8px;padding:5px 5px}
+    .ctable td{padding:3px 5px}
+    .icon-btn span{display:none}
+    .icon-btn{padding:6px 8px}
+    #tc{right:8px;top:56px}
+    .toast{min-width:180px;max-width:calc(100vw - 20px)}
+  }
+  @media(max-width:400px){
+    .nifty-price{font-size:16px}
+    .stat-pill{display:none}
+  }
 </style>
 </head>
 <body>
@@ -186,14 +263,14 @@
 <!-- SETUP MODAL -->
 <div id="setup-modal">
   <div class="modal-box">
-    <div class="modal-title">🔑 Upstox Login</div>
+    <div class="modal-header"><div class="modal-header-icon"><i class="fa-solid fa-key"></i></div><div><div class="modal-title">Upstox Login</div></div></div>
     <div class="modal-sub">Enter your Upstox access token to stream live Nifty option chain data.</div>
 
     <!-- Access Token Input -->
     <div class="token-block">
       <div class="token-label">
-        <span style="color:var(--am)">★</span> Upstox Access Token (required)
-        <a href="https://upstox.com/developer/apps" target="_blank">Get token ↗</a>
+        <i class="fa-solid fa-star" style="color:var(--am)"></i> Upstox Access Token (required)
+        <a href="https://upstox.com/developer/apps" target="_blank"><i class="fa-solid fa-arrow-up-right-from-square"></i> Get token</a>
       </div>
       <input type="password" id="access-token" placeholder="Paste your Upstox access token here..." autocomplete="off" />
       <div class="token-hint">
@@ -245,45 +322,49 @@
     </div>
 
     <div class="modal-actions">
-      <button class="btn btn-go" onclick="startDashboard()">Start Dashboard →</button>
+      <button class="icon-btn go" onclick="startDashboard()"><i class="fa-solid fa-rocket"></i><span>Start Dashboard</span></button>
     </div>
   </div>
 </div>
 
+<!-- OVERLAY for mobile sidebar -->
+<div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+
 <!-- HEADER -->
 <div class="header">
-  <div style="display:flex;align-items:center;gap:14px">
-    <div class="logo"><div class="logo-dot"></div>NiftyAnalysis</div>
-    <div style="height:26px;width:1px;background:var(--border)"></div>
+  <div style="display:flex;align-items:center;gap:10px">
+    <button class="ham-btn" id="ham-btn" onclick="openSidebar()" title="Menu"><i class="fa-solid fa-bars"></i></button>
+    <div class="logo"><div class="logo-dot"></div><span class="logo-text">NiftyAnalysis</span></div>
+    <div style="height:22px;width:1px;background:var(--border)"></div>
     <div>
       <div class="nifty-price" id="nifty-price">—</div>
-      <div id="nifty-chg" style="font-size:12px;font-weight:500;color:var(--txt2)">Loading...</div>
+      <div id="nifty-chg" style="font-size:11px;font-weight:500;color:var(--txt2)">Loading...</div>
     </div>
   </div>
-  <div style="display:flex;gap:12px;align-items:center">
-    <div class="stat-pill"><div class="pill-label">India VIX</div><div class="pill-val" id="vix-v">—</div></div>
-    <div class="stat-pill"><div class="pill-label">PCR</div><div class="pill-val" id="pcr-v">—</div></div>
-    <div class="stat-pill"><div class="pill-label">Max Pain</div><div class="pill-val" id="mp-v" style="color:var(--am)">—</div></div>
+  <div class="hdr-center" style="display:flex;gap:10px;align-items:center">
+    <div class="stat-pill"><div class="pill-label"><i class="fa-solid fa-fire-flame-curved" style="color:var(--r);margin-right:2px"></i>India VIX</div><div class="pill-val" id="vix-v">—</div></div>
+    <div class="stat-pill"><div class="pill-label"><i class="fa-solid fa-scale-balanced" style="color:var(--b);margin-right:2px"></i>PCR</div><div class="pill-val" id="pcr-v">—</div></div>
+    <div class="stat-pill"><div class="pill-label"><i class="fa-solid fa-bullseye" style="color:var(--am);margin-right:2px"></i>Max Pain</div><div class="pill-val" id="mp-v" style="color:var(--am)">—</div></div>
   </div>
   <div class="hdr-right">
     <div class="src-indicator" id="src-ind"><div class="src-dot" style="background:var(--txt3)"></div><span id="src-label">—</span></div>
-    <div style="font-size:10px;color:var(--txt3);font-family:'JetBrains Mono',monospace" id="last-upd">—</div>
-    <button class="btn" style="font-size:11px" onclick="fetchData()">↻ Refresh</button>
-    <button class="btn" style="font-size:11px;color:var(--am)" onclick="requestNotif()">🔔</button>
-    <button class="btn" style="font-size:11px;color:var(--txt2)" onclick="document.getElementById('setup-modal').style.display='flex'">⚙ Token</button>
+    <div style="font-size:10px;color:var(--txt3);font-family:'JetBrains Mono',monospace;display:none" id="last-upd" class="last-upd-text">—</div>
+    <button class="icon-btn" onclick="fetchData()" title="Refresh data"><i class="fa-solid fa-rotate"></i><span>Refresh</span></button>
+    <button class="icon-btn" onclick="requestNotif()" title="Enable notifications" style="color:var(--am)"><i class="fa-solid fa-bell"></i></button>
+    <button class="icon-btn" onclick="document.getElementById('setup-modal').style.display='flex'" title="Update token"><i class="fa-solid fa-key"></i><span>Token</span></button>
   </div>
 </div>
 
 <!-- ALERTS STRIP -->
-<div class="alerts-strip" id="astrip"><span class="alabel">ALERTS ▸</span><span class="atag info"><span class="adot"></span>Initializing...</span></div>
+<div class="alerts-strip" id="astrip"><span class="alabel"><i class="fa-solid fa-triangle-exclamation"></i> ALERTS</span><span class="atag info"><span class="adot"></span>Initializing...</span></div>
 
 <!-- MAIN -->
 <div class="main">
 
   <!-- LEFT -->
-  <div class="left-panel">
+  <div class="left-panel" id="left-panel">
     <div class="ps">
-      <div class="stitle">Market Bias</div>
+      <div class="stitle"><i class="fa-solid fa-gauge-high"></i> Market Bias</div>
       <div class="gauge-wrap">
         <div style="font-size:10px;color:var(--txt3);margin-bottom:6px">Sentiment Meter</div>
         <div class="gauge-bar"><div class="gauge-needle" id="gneedle" style="left:50%"></div></div>
@@ -294,27 +375,27 @@
     </div>
 
     <div class="ps">
-      <div class="stitle">Key Signals</div>
-      <div class="srow"><span class="sname">PCR</span><span class="badge bneu" id="s-pcr">—</span></div>
-      <div class="srow"><span class="sname">VIX</span><span class="badge bneu" id="s-vix">—</span></div>
-      <div class="srow"><span class="sname">OI Trend</span><span class="badge bneu" id="s-oi">—</span></div>
-      <div class="srow"><span class="sname">Max Pain</span><span class="badge bneu" id="s-mp">—</span></div>
-      <div class="srow"><span class="sname">Writing</span><span class="badge bneu" id="s-wr">—</span></div>
-      <div class="srow"><span class="sname">Breakout %</span><span class="sval" id="s-bp">—</span></div>
+      <div class="stitle"><i class="fa-solid fa-signal"></i> Key Signals</div>
+      <div class="srow"><span class="sname"><i class="fa-solid fa-scale-balanced"></i>PCR</span><span class="badge bneu" id="s-pcr">—</span></div>
+      <div class="srow"><span class="sname"><i class="fa-solid fa-fire-flame-curved"></i>VIX</span><span class="badge bneu" id="s-vix">—</span></div>
+      <div class="srow"><span class="sname"><i class="fa-solid fa-arrow-trend-up"></i>OI Trend</span><span class="badge bneu" id="s-oi">—</span></div>
+      <div class="srow"><span class="sname"><i class="fa-solid fa-bullseye"></i>Max Pain</span><span class="badge bneu" id="s-mp">—</span></div>
+      <div class="srow"><span class="sname"><i class="fa-solid fa-pen-to-square"></i>Writing</span><span class="badge bneu" id="s-wr">—</span></div>
+      <div class="srow"><span class="sname"><i class="fa-solid fa-bolt"></i>Breakout %</span><span class="sval" id="s-bp">—</span></div>
     </div>
 
     <div class="ps">
-      <div class="stitle">Resistance (CE Walls)</div>
+      <div class="stitle"><i class="fa-solid fa-shield" style="color:var(--r)"></i> Resistance (CE Walls)</div>
       <div id="res-zones"><div style="color:var(--txt3);font-size:11px;text-align:center;padding:10px">—</div></div>
     </div>
 
     <div class="ps">
-      <div class="stitle">Support (PE Walls)</div>
+      <div class="stitle"><i class="fa-solid fa-shield-halved" style="color:var(--g)"></i> Support (PE Walls)</div>
       <div id="sup-zones"><div style="color:var(--txt3);font-size:11px;text-align:center;padding:10px">—</div></div>
     </div>
 
     <div class="ps">
-      <div class="stitle">OI Distribution</div>
+      <div class="stitle"><i class="fa-solid fa-chart-column"></i> OI Distribution</div>
       <div class="mini-chart" id="mc"><div style="color:var(--txt3);font-size:10px;text-align:center;width:100%;padding:16px 0">—</div></div>
     </div>
   </div>
@@ -322,20 +403,20 @@
   <!-- CENTER -->
   <div class="center-panel">
     <div class="chain-ctrl">
-      <div style="display:flex;align-items:center;gap:8px">
-        <span class="clabel">Expiry</span>
+      <div class="ctrl-group">
+        <span class="clabel"><i class="fa-regular fa-calendar"></i> Expiry</span>
         <select id="expiry-sel" onchange="onExpiryChange()"><option value="">—</option></select>
       </div>
-      <div style="display:flex;align-items:center;gap:8px"><span class="clabel">Strikes ±</span>
+      <div class="ctrl-group"><span class="clabel"><i class="fa-solid fa-layer-group"></i> Strikes ±</span>
         <select id="stk-n" onchange="renderTable()"><option value="10">10</option><option value="15" selected>15</option><option value="20">20</option></select>
       </div>
-      <div style="display:flex;align-items:center;gap:8px"><span class="clabel">Auto Refresh</span>
+      <div class="ctrl-group"><span class="clabel"><i class="fa-solid fa-clock-rotate-left"></i> Auto Refresh</span>
         <select id="ar-sel" onchange="setAR()"><option value="0">Off</option><option value="60" selected>60s</option><option value="120">2min</option><option value="300">5min</option></select>
       </div>
       <div style="flex:1"></div>
       <div style="display:flex;align-items:center;gap:6px;font-size:10px;color:var(--txt3)">
-        <div class="slive"></div>Upstox Real-time
-        <span id="mkt-st" style="margin-left:8px;font-family:'JetBrains Mono',monospace">○ —</span>
+        <div class="slive"></div><span>Upstox Real-time</span>
+        <span id="mkt-st" style="margin-left:6px;font-family:'JetBrains Mono',monospace">○ —</span>
       </div>
     </div>
     <div class="chain-wrap" id="cwrap" style="position:relative">
@@ -376,31 +457,36 @@
   <!-- RIGHT -->
   <div class="right-panel">
     <div class="ps" style="flex:1">
-      <div class="stitle">Intelligence Alerts</div>
+      <div class="stitle"><i class="fa-solid fa-brain"></i> Intelligence Alerts</div>
       <div id="alist"><div style="color:var(--txt3);font-size:11px;text-align:center;padding:16px">Waiting...</div></div>
     </div>
 
     <div class="ps">
-      <div class="stitle">Options Stats</div>
-      <div class="srow"><span class="sname">CE Total OI</span><span class="sval" id="r-ce">—</span></div>
-      <div class="srow"><span class="sname">PE Total OI</span><span class="sval" id="r-pe">—</span></div>
-      <div class="srow"><span class="sname">CE Writing</span><span class="sval" id="r-cew">—</span></div>
-      <div class="srow"><span class="sname">PE Writing</span><span class="sval" id="r-pew">—</span></div>
-      <div class="srow"><span class="sname">Gamma Risk</span><span class="badge bneu" id="r-gr">—</span></div>
+      <div class="stitle"><i class="fa-solid fa-chart-pie"></i> Options Stats</div>
+      <div class="srow"><span class="sname"><i class="fa-solid fa-phone-volume" style="color:var(--r)"></i>CE Total OI</span><span class="sval" id="r-ce">—</span></div>
+      <div class="srow"><span class="sname"><i class="fa-solid fa-arrow-put" style="color:var(--g)"></i>PE Total OI</span><span class="sval" id="r-pe">—</span></div>
+      <div class="srow"><span class="sname"><i class="fa-solid fa-pen" style="color:var(--r)"></i>CE Writing</span><span class="sval" id="r-cew">—</span></div>
+      <div class="srow"><span class="sname"><i class="fa-solid fa-pen" style="color:var(--g)"></i>PE Writing</span><span class="sval" id="r-pew">—</span></div>
+      <div class="srow"><span class="sname"><i class="fa-solid fa-radiation" style="color:var(--am)"></i>Gamma Risk</span><span class="badge bneu" id="r-gr">—</span></div>
     </div>
 
-    <div class="ps" style="font-size:11px;color:var(--txt2);line-height:1.8">
-      <div class="stitle">Legend</div>
+    <div class="ps" style="font-size:11px;color:var(--txt2);line-height:2">
+      <div class="stitle"><i class="fa-solid fa-circle-info"></i> Legend</div>
       <div><span style="color:var(--r)">▲WR</span> CE Writing = Resistance added</div>
       <div><span style="color:var(--g)">▲WR</span> PE Writing = Support added</div>
       <div><span style="color:var(--am)">▼UW</span> = Position unwinding</div>
-      <div style="margin-top:5px;color:var(--txt3)">PCR &gt; 1.2 = Bullish | &lt; 0.7 = Bearish</div>
+      <div style="margin-top:6px;color:var(--txt3);font-size:10px"><i class="fa-solid fa-circle-info"></i> PCR &gt; 1.2 = Bullish &nbsp;|&nbsp; &lt; 0.7 = Bearish</div>
     </div>
   </div>
 
 </div>
 
 <div id="tc"></div>
+
+<script>
+function openSidebar(){document.getElementById('left-panel').classList.add('mobile-open');document.getElementById('overlay').classList.add('open');}
+function closeSidebar(){document.getElementById('left-panel').classList.remove('mobile-open');document.getElementById('overlay').classList.remove('open');}
+</script>
 
 <script>
 // ── CONFIG ─────────────────────────────────────────────────────────────
