@@ -1,7 +1,6 @@
 {
   "rewrites": [
-    { "source": "/api/(.*)", "destination": "/api/index.py" },
-    { "source": "/(.*)", "destination": "/nifty_dashboard.html" }
+    { "source": "/api/(.*)", "destination": "/api/index.py" }
   ],
   "headers": [
     {

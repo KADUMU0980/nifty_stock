@@ -862,7 +862,14 @@ function setAR() {
 }
 
 // ── INIT ──────────────────────────────────────────────────────────────
-selectSource('local');
+if (!IS_LOCAL) {
+  const tokenInput = document.getElementById('access-token');
+  if (tokenInput) tokenInput.value = 'server_env';
+  DATA_SOURCE = 'vercel';
+  startDashboard();
+} else {
+  selectSource('local');
+}
 setInterval(()=>{
   document.getElementById('mkt-st').textContent = isOpen()?'● MARKET LIVE':'○ CLOSED';
   document.getElementById('mkt-st').style.color = isOpen()?'var(--g)':'var(--r)';

@@ -9,6 +9,7 @@ from flask_cors import CORS
 import requests
 import time
 from datetime import date
+import os
 
 app = Flask(__name__)
 CORS(app)
@@ -24,11 +25,11 @@ def upstox_headers(token: str) -> dict:
     }
 
 def get_token() -> str | None:
-    """Read token from request header or query param."""
-    return (
-        request.headers.get("X-Access-Token")
-        or request.args.get("token")
-    )
+    """Read token from request header, query param, or environment variable."""
+    token = request.headers.get("X-Access-Token") or request.args.get("token")
+    if not token or token == "env" or token == "server_env":
+        token = os.environ.get("UPSTOX_ACCESS_TOKEN")
+    return token
 
 # ── Expiry helper ─────────────────────────────────────────────────────
 def fetch_expiries(token: str) -> list[str]:
