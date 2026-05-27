@@ -392,8 +392,10 @@
 
 <script>
 // ── CONFIG ─────────────────────────────────────────────────────────────
-let DATA_SOURCE   = 'local';
-let PROXY_URL     = 'http://localhost:5000';
+// Auto-detect: if running on localhost, use local proxy; otherwise use same-origin (Vercel)
+const IS_LOCAL = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+let DATA_SOURCE   = IS_LOCAL ? 'local' : 'vercel';
+let PROXY_URL     = IS_LOCAL ? 'http://localhost:5000' : '';
 let ACCESS_TOKEN  = '';
 let SELECTED_EXPIRY = '';
 
@@ -436,7 +438,7 @@ function updateSourceIndicator() {
 
 // ── EXPIRY ─────────────────────────────────────────────────────────────
 async function loadExpiries() {
-  const base = DATA_SOURCE === 'local' ? 'http://localhost:5000' : PROXY_URL;
+  const base = IS_LOCAL && DATA_SOURCE === 'local' ? 'http://localhost:5000' : (PROXY_URL || '');
   try {
     const r = await fetch(base+'/api/expiries', {
       headers: { 'X-Access-Token': ACCESS_TOKEN },
@@ -524,7 +526,7 @@ async function fetchData() {
   document.getElementById('lov').style.display = 'flex';
   document.getElementById('last-upd').textContent = 'Fetching...';
 
-  const base = DATA_SOURCE === 'local' ? 'http://localhost:5000' : PROXY_URL;
+  const base = IS_LOCAL && DATA_SOURCE === 'local' ? 'http://localhost:5000' : (PROXY_URL || '');
   const headers = { 'X-Access-Token': ACCESS_TOKEN };
   const expiry = SELECTED_EXPIRY || document.getElementById('expiry-sel')?.value || '';
   const ocUrl  = base + '/api/option-chain' + (expiry ? `?expiry=${expiry}` : '');
