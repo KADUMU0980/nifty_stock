@@ -203,12 +203,18 @@
     </div>
 
     <!-- Source: Local vs Cloud -->
-    <div class="source-cards">
+    <div class="source-cards" style="display:grid;grid-template-columns:repeat(auto-fit, minmax(140px, 1fr));gap:10px;margin-bottom:16px">
       <div class="src-card selected" id="src-local" onclick="selectSource('local')">
         <div class="src-icon">🖥️</div>
         <div class="src-name">Local Proxy</div>
         <div class="src-desc">Run <code style="font-size:10px;background:#1c2028;padding:1px 4px;border-radius:3px;color:var(--am)">upstox_proxy.py</code> on your PC.</div>
         <span class="src-badge badge-local">Recommended</span>
+      </div>
+      <div class="src-card" id="src-vercel" onclick="selectSource('vercel')" style="display:none">
+        <div class="src-icon">⚡</div>
+        <div class="src-name">Vercel Cloud</div>
+        <div class="src-desc">Use built-in Vercel serverless functions directly.</div>
+        <span class="src-badge badge-free" style="background:var(--gd);color:var(--g)">Production</span>
       </div>
       <div class="src-card" id="src-render" onclick="selectSource('render')">
         <div class="src-icon">☁️</div>
@@ -223,6 +229,12 @@
       <div><span class="step-num">Step 2:</span> Run proxy: <code>python upstox_proxy.py</code></div>
       <div><span class="step-num">Step 3:</span> Paste token above and click Start ✅</div>
       <div style="margin-top:6px;color:var(--am)">⚡ Proxy runs at localhost:5000 — live data via Upstox API</div>
+    </div>
+
+    <div id="steps-vercel" class="src-steps" style="display:none">
+      <div><span class="step-num">Status:</span> Running on Vercel production serverless API.</div>
+      <div><span class="step-num">Setup:</span> Paste your Upstox access token above and click <b>Start Dashboard</b>.</div>
+      <div style="margin-top:6px;color:var(--g)">⚡ No local proxy servers or local Python terminal required!</div>
     </div>
 
     <div id="steps-render" class="src-steps" style="display:none">
@@ -418,9 +430,17 @@ async function startDashboard() {
 
   if(DATA_SOURCE === 'render') {
     const url = document.getElementById('render-url')?.value?.trim();
-    if(url) PROXY_URL = url.replace(/\/$/, '');
+    if(url) {
+      PROXY_URL = url.replace(/\/$/, '');
+      localStorage.setItem('upstox_render_url', PROXY_URL);
+    }
     else { showToast('warn','⚠️ URL Missing','Enter your cloud proxy URL'); return; }
   }
+  
+  // Save token and source to localStorage for persistence
+  localStorage.setItem('upstox_access_token', ACCESS_TOKEN);
+  localStorage.setItem('upstox_data_source', DATA_SOURCE);
+
   document.getElementById('setup-modal').style.display = 'none';
   updateSourceIndicator();
   await loadExpiries();
@@ -429,8 +449,8 @@ async function startDashboard() {
 }
 
 function updateSourceIndicator() {
-  const labels = { local: 'Local Proxy (localhost:5000)', render: 'Cloud Proxy' };
-  const colors  = { local: 'var(--g)', render: 'var(--b)' };
+  const labels = { local: 'Local Proxy (localhost:5000)', render: 'Cloud Proxy', vercel: 'Vercel Serverless' };
+  const colors  = { local: 'var(--g)', render: 'var(--b)', vercel: 'var(--pu)' };
   document.getElementById('src-label').textContent = labels[DATA_SOURCE] || DATA_SOURCE;
   document.getElementById('src-ind').querySelector('.src-dot').style.background = colors[DATA_SOURCE] || 'var(--g)';
   document.getElementById('st-src').textContent = 'Upstox · ' + (labels[DATA_SOURCE] || DATA_SOURCE);
@@ -862,13 +882,40 @@ function setAR() {
 }
 
 // ── INIT ──────────────────────────────────────────────────────────────
+// Try loading saved token and source
+const savedToken = localStorage.getItem('upstox_access_token');
+const savedSource = localStorage.getItem('upstox_data_source');
+const savedRenderUrl = localStorage.getItem('upstox_render_url');
+
+if (savedRenderUrl && document.getElementById('render-url')) {
+  document.getElementById('render-url').value = savedRenderUrl;
+}
+
 if (!IS_LOCAL) {
+  // Show Vercel option in the setup modal
+  const vercelCard = document.getElementById('src-vercel');
+  if (vercelCard) vercelCard.style.display = 'block';
+
+  // Set default or saved source
+  DATA_SOURCE = savedSource || 'vercel';
+  selectSource(DATA_SOURCE);
+
   const tokenInput = document.getElementById('access-token');
-  if (tokenInput) tokenInput.value = 'server_env';
-  DATA_SOURCE = 'vercel';
+  if (tokenInput) {
+    tokenInput.value = savedToken || 'server_env';
+  }
+
+  // Auto-start if we have a token or default to server_env
   startDashboard();
 } else {
-  selectSource('local');
+  DATA_SOURCE = savedSource || 'local';
+  selectSource(DATA_SOURCE);
+  
+  const tokenInput = document.getElementById('access-token');
+  if (tokenInput && savedToken) {
+    tokenInput.value = savedToken;
+    startDashboard();
+  }
 }
 setInterval(()=>{
   document.getElementById('mkt-st').textContent = isOpen()?'● MARKET LIVE':'○ CLOSED';
